@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <packaging>jar</packaging>
+    <groupId>org.webjars</groupId>
+    <artifactId>jsmol</artifactId>
+    <version>14.31.44-SNAPSHOT</version>
+    <name>JSmol</name>
+    <description>WebJar for JSmol</description>
+    <url>http://webjars.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <upstream.major.minor>14.31</upstream.major.minor>
+        <upstream.patch>44</upstream.patch>
+        <upstream.version>${upstream.major.minor}.${upstream.patch}</upstream.version>
+        <upstream.file>Jmol-${upstream.version}-binary.zip</upstream.file>
+        <upstream.url>https://sourceforge.net/projects/jmol/files/Jmol/Version%20${upstream.major.minor}/Jmol%20${upstream.version}/${upstream.file}</upstream.url>
+        <destDir>${project.build.outputDirectory}/META-INF/resources/webjars/${project.artifactId}/${project.version}</destDir>
+        <requirejs>
+            {
+                "paths": {
+                    "jsmol": "JSmol.min"
+                }
+            }
+        </requirejs>
+    </properties>
+
+    <developers>
+        <developer>
+            <id>leadpony</id>
+            <name>leadpony</name>
+            <email />
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License</name>
+            <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>http://github.com/webjars/jsmol</url>
+        <connection>scm:git:https://github.com/webjars/jsmol.git</connection>
+        <developerConnection>scm:git:https://github.com/webjars/jsmol.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.jamesward</groupId>
+                <artifactId>unsnapshot-maven-plugin</artifactId>
+                <version>0.2</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unsnapshot</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <target>
+                                <echo message="download archive"/>
+                                <get src="${upstream.url}" dest="${project.build.directory}/${upstream.file}"/>
+                                <echo message="unzip archive"/>
+                                <unzip src="${project.build.directory}/${upstream.file}" dest="${project.build.directory}"/>
+                                <unzip src="${project.build.directory}/jmol-${upstream.version}/jsmol.zip" dest="${project.build.directory}"/>
+                                <echo message="moving resources"/>
+                                <move todir="${destDir}">
+                                    <fileset dir="${project.build.directory}/jsmol">
+                                        <include name="*.js"/>
+                                        <include name="j2s/**"/>
+                                    </fileset>
+                                </move>
+                                <move todir="${destDir}">
+                                    <filelist dir="${project.build.directory}/jmol-${upstream.version}">
+                                        <file name="LICENSE.txt"/>
+                                    </filelist>
+                                </move>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>sonatype-nexus-staging</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
